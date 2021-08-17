@@ -44,10 +44,10 @@ FOR2: 	slti 	$t0, $s0, 10 		# s0<10 -> t0 = 1
 	addu 	$s6, $zero, $s1		# maior = s1	
 	
 SAIIF1:	addiu 	$s0, $s0, 1 		# incrementa contador
-	j	FOR1
+	j	FOR2
 
-SAI2: 	
-	print_int($s5)		# printa a soma 
-	print_int($s6)		# printa o maior
+SAI2: 	print_int($s5)		# printa a soma 
 	printNL
+	print_int($s6)		# printa o maior
+	
 	return0
