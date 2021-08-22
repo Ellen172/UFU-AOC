@@ -1,6 +1,6 @@
 # Escreva um programa que calcule o fatorial de N. (sem funcoes)
 
-.include "biblioFat.asm"
+.include "fatBiblio.asm"
 
 .data 
 	n: 	.space  4
