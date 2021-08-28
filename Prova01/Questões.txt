@@ -1,0 +1,20 @@
+Questão 01
+O diferencial da arquitetura Von Neumann foi o uso da memória, deixar salvo as instruções e códigos no próprio computador facilitando a entrada/saida de dados. Os 3 módulos principais dessa arquitetura são: memória, entrada e saida de dados, e, cpu (unidade de processamento)
+
+Questão 02
+A arquitetura define o propósito da máquina, suas funcionalidades e quais dispositivos serão necessários. Enquanto que, a organização define as relações entre os hardwares, se preocupando em melhorar o desempenho, otimizando-as
+
+Questão 04
+a) add $s0, $zero, $s1
+b) mult $t2, 42   mflo $t1
+ // addiu $at, $zero, 42  
+ //mul $t1, $t2, $at
+c) 
+ // ori $s0, $at, 0xAABC
+
+Questão 05
+a) Tipo I; Código de máquina: 10001110001100000000000000000000; Hexa: 0x8E300000; 
+b) Tipo I; Código de máquina: 10101111101111110000000000000101; Hexa: 0xAFBF0005; 
+c) Tipo I; Código de máquina: 00010010001100000000000000000101; Hexa: 0x12300005; 
+d) Tipo J; Código de máquina: 00001101001000100010101011110111; Hexa: 0x0D222AF7; 
+e) Tipo R; Código de máquina: 00000010000100011001000000100000; Hexa: 0x02119020
