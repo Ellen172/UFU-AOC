@@ -1,0 +1,309 @@
+# ALUNOS			 	 |	MATRÍCULA
+# Ellen Christina Amaral Santana 	 | 	12011BSI208
+# Gabriel Cardoso Brandão de Sousa Amaral|  	12011BSI255
+# Isabella Vecchi Ferreira	 	 |	11621ECP002
+
+.macro printStr(%strn)
+	addiu	$v0, $zero, 4
+	la	$a0, %strn
+	syscall
+.end_macro
+
+.macro printInt(%intV)
+	addiu	$v0, $zero, 1
+	addu	$a0, $zero, %intV
+	syscall
+.end_macro
+
+.macro saveContext
+	sw	$at, 0($sp)
+	sw	$a0, -4($sp)
+	sw	$a1, -8($sp)
+	sw	$a2, -12($sp)
+	sw	$a3, -16($sp)
+	sw	$t0, -20($sp)
+	sw	$t1, -24($sp)
+	sw	$t2, -28($sp)
+	sw	$t3, -32($sp)
+	sw	$t4, -36($sp)
+	sw	$t5, -40($sp)
+	sw	$t6, -44($sp)
+	sw	$t7, -48($sp)
+	sw	$s0, -52($sp)
+	sw	$s1, -56($sp)
+	sw	$s2, -60($sp)
+	sw	$s3, -64($sp)
+	sw	$s4, -68($sp)
+	sw	$s5, -72($sp)
+	sw	$s6, -76($sp)
+	sw	$s7, -80($sp)
+	sw	$gp, -84($sp)
+	sw	$fp, -88($sp)
+	sw	$ra, -92($sp)
+	addiu 	$sp, $sp, -96
+.end_macro
+
+.macro restoreContext
+	lw	$ra, 4($sp)
+	lw	$fp, 8($sp)
+	lw	$gp, 12($sp)
+	lw	$s7, 16($sp)
+	lw	$s6, 20($sp)
+	lw	$s5, 24($sp)
+	lw	$s4, 28($sp)
+	lw	$s3, 32($sp)
+	lw	$s2, 36($sp)
+	lw	$s1, 40($sp)
+	lw	$s0, 44($sp)
+	lw	$t7, 48($sp)
+	lw	$t6, 52($sp)
+	lw	$t5, 56($sp)
+	lw	$t4, 60($sp)
+	lw	$t3, 64($sp)
+	lw	$t2, 68($sp)
+	lw	$t1, 72($sp)
+	lw	$t0, 76($sp)
+	lw	$a3, 80($sp)
+	lw	$a2, 84($sp)
+	lw	$a1, 88($sp)
+	lw	$a0, 92($sp)
+	lw	$at, 96($sp)
+	addiu	$sp, $sp, 96
+.end_macro
+
+.data
+	.align 2
+	buff:		.space 4
+	file_name:	.asciiz	"numeros.csv"
+	quantidade:	.word 0
+	converte:	.space 16
+	array:		.space 4000
+
+	saida:		.asciiz "Numeros Ordenados: "
+	separador:	.asciiz ", "
+	pontoFinal:		.asciiz "."
+	
+.text
+
+FOPEN:
+	li	$v0, 13
+	la	$a0, file_name
+	li	$a1, 0
+	syscall
+	
+	#descritor do arquivo
+	addu	$s0, $zero, $v0
+	blt	$s0, $zero, FOPEN_EXCEPTION
+	
+	la	$s6, array	#carrega o primeiro endereço de 'array' em s6
+	
+	##### LEITURA E ATOI ######
+	jal	LEITURA
+
+	##### ORDENA ######
+	jal	ORDENAELEMENTOS
+
+	##### IMPRIME ######
+	jal	IMPRIMEVETOR
+
+FCLOSE:
+	#fclose
+	li	$v0, 16
+	addu	$a0, $s0, $zero
+	syscall	
+	
+RETURN0:
+	#return0
+	li	$v0, 10
+	syscall
+	
+	
+
+# TRATAMENTO DE ERROS
+.data
+	.align 2
+	ex_fopen:	.asciiz "\nErro ao abrir o arquivo"
+	ex_read:	.asciiz "\nErro ao tentar ler o arquivo"
+.text
+FOPEN_EXCEPTION:
+	printStr(ex_fopen)
+	j	RETURN0
+
+READ_EXCEPTION:
+	printStr(ex_read)
+	j	FCLOSE
+	
+
+# FUNCÇÕES
+## FUNÇÃO PARA LEITURA E ATOI	
+LEITURA:
+	lw	$s3, quantidade	#conta quantos números
+	saveContext
+COMECO:
+	li	$s2, 0		#contador de quantos laços (quantos algarismos)
+	
+FOR1:	li	$v0, 14
+	move	$a0, $s0
+	la	$a1, buff
+	li 	$a2, 1
+	syscall
+	move	$s1, $v0
+	bltz	$s1, READ_EXCEPTION
+	
+	####### ATOI #######	
+	lb	$s4, 0($a1)	# carrega o buffer de entrada em t7
+	
+	#addiu	$v0, $zero, 4
+	#la	$a0, ($a1)
+	#syscall
+	
+	beq	$s4, 44, VIRGULA
+	blt	$s4, 48, NOT_NUM
+	bgt	$s4, 58, NOT_NUM
+	
+	addiu	$s4, $s4, -48	# ascii to int
+	la	$s7, converte	#carrega o primeiro endereço de 'converte' em s7
+	
+	##testar se é o primeiro ou não, para repassar os valores!!
+	beqz	$s2, PRIM
+	beq	$s2, 1, SEG
+	beq	$s2, 2, TER
+	beq	$s2, 3, QUA
+	
+QUA:	lw	$t3, 8($s7)
+	sw	$t3, 12($s7)
+
+TER:	lw	$t2, 4($s7)
+	sw	$t2, 8($s7)
+		
+SEG:	lw	$t1, 0($s7)
+	sw	$t1, 4($s7)
+	
+PRIM:	sw	$s4, 0($s7)	#escreve o valor na 1a posição do vetor 'converte'
+
+	#for3 para voltar para a posição de onde se deve partir:
+	#addiu	$s7, $s7, 4	#para pegar as próximas posições deste vetor também
+	
+	addiu	$s2, $s2, 1	#conta algarismos
+	j	FOR1
+	
+NOT_NUM:li $s1, 0	
+	
+VIRGULA:la	$s7, converte	#carrega o primeiro endereço de 'converte' em s7
+	addiu	$s3, $s3, 1	#acabou de concluir um número
+	
+	beq	$s2, 1, UN
+	beq	$s2, 2, DZ
+	beq	$s2, 3, CN
+	beq	$s2, 4, KL
+
+KL:	lw	$t4, 12($s7)
+	mulu	$t4, $t4, 1000
+	lw	$t3, 8($s7)
+	mulu	$t3, $t3, 100
+	lw	$t2, 4($s7)
+	mulu	$t2, $t2, 10
+	lw	$t1, 0($s7)
+	j	SAI1
+	
+CN:	lw	$t3, 8($s7)
+	mulu	$t3, $t3, 100
+	lw	$t2, 4($s7)
+	mulu	$t2, $t2, 10
+	lw	$t1, 0($s7)
+	
+	li	$t4, 0
+	j	SAI1
+
+DZ:	lw	$t2, 4($s7)
+	mulu	$t2, $t2, 10
+	lw	$t1, 0($s7)
+	
+	li	$t4, 0
+	li	$t3, 0
+	j	SAI1
+
+UN:	lw	$t1, 0($s7)
+
+	li	$t4, 0
+	li	$t3, 0
+	li	$t2, 0
+	j	SAI1
+
+
+SAI1:	addu	$s5, $t1, $t2
+	addu	$s5, $s5, $t3
+	addu	$s5, $s5, $t4
+	sw	$s5, 0($s6)
+	addiu	$s6, $s6, 4
+		
+	beq	$s1, $zero, FIMLEITURA
+	j	COMECO
+
+FIMLEITURA:
+	sw	$s3, quantidade	#grava na memória
+	restoreContext
+	jr	$ra
+
+## FUNÇÃO DE ORDENAÇÃO
+ORDENAELEMENTOS:
+	saveContext
+	lw	$s7, quantidade
+	la	$s6, array
+	li	$t7, 0	#i=0
+
+FORMAIOR:
+	lw	$t2, 0($s6)	#array[i]
+	addu	$t5, $zero, $t2	
+	addiu	$s2, $s6, 4
+	beq	$t7, $s7, SAIFORMAIOR	#i<1000
+	la	$t4, 0($s6)	#endereco = i
+	addiu	$t6, $t7, 1	#j=(i+1)
+FORMENOR:
+	lw	$t3, 0($s2)	#array[j]
+	beq	$t6, $s7, SAIFORMENOR	
+	bge	$t3, $t2, NAOMUDA
+	addu	$t2, $zero, $t3		#menor = array[j]
+	la	$t4, 0($s2)	#endereco = j
+	#addu	$t4, $zero, $t6		#endereco = j
+NAOMUDA:
+	addiu	$t6, $t6, 1	#j++
+	addiu	$s2, $s2, 4	#array[j]++
+	j	FORMENOR
+
+SAIFORMENOR:
+	sw	$t5, 0($t4)	#array[endereco] = array[i];
+	sw	$t2, 0($s6)	#array[i] = menor;
+
+	addiu	$s6, $s6, 4	#percorrer o array em i
+	addiu 	$t7, $t7, 1	#i++
+	j	FORMAIOR
+
+SAIFORMAIOR:
+	restoreContext
+	jr	$ra
+
+#FUNÇÃO DE IMPRESSÃO
+IMPRIMEVETOR:
+	saveContext
+	lw	$s7, quantidade
+	printStr(saida)
+	la	$s6, array	
+	li	$t7, 0	#i=0
+IMPRESSAO:
+	beq	$t7, $s7, TERMINOUIMPRESSAO
+	addiu	$t7, $t7, 1	#i++
+	lw	$t6, 0($s6)	#array[i]
+	printInt($t6)		#printf("%d",&array[i]);
+	beq	$t7, $s7, N_VIR
+	printStr(separador)
+	addiu	$s6, $s6, 4	#percorrer o array em i
+	j	IMPRESSAO
+
+N_VIR:	addiu	$s6, $s6, 4	#percorrer o array em i
+	printStr(pontoFinal)
+	j	IMPRESSAO
+
+TERMINOUIMPRESSAO:
+	restoreContext
+	jr	$ra
